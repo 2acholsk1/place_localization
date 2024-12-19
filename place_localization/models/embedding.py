@@ -34,7 +34,7 @@ class EmbeddingModel(pl.LightningModule):
                                              pretrained=True,
                                              num_classes=0,
                                              global_pool='',
-                                             img_size=(512, 512))
+                                             )
                 self.network = nn.Sequential(
                     backbone,
                     Normalize(),
@@ -58,9 +58,10 @@ class EmbeddingModel(pl.LightningModule):
         self.test_metrics = metrics.clone(prefix='test_')
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # print(x.shape)
         return self.network(x)
 
-    def training_step(self, batch, batch_idx: int) -> Optional[torch.Tensor]:
+    def training_step(self, batch, batch_idx: int):
         x, y = batch,
         x = x.squeeze(0)
         y = y.squeeze(0)
@@ -69,15 +70,17 @@ class EmbeddingModel(pl.LightningModule):
         self.log('train_loss', loss, sync_dist=True, prog_bar=True)
         return loss
 
-    def validation_step(self, batch, batch_idx: int) -> None:
+    def validation_step(self, batch, batch_idx: int):
         x, y = batch
+        print(x.shape)
+        print(y.shape)
         x = x.squeeze(0)
         y = y.squeeze(0)
         y_pred = self.forward(x)
         self.val_outputs['preds'].append(y_pred.cpu())
         self.val_outputs['targets'].append(y.cpu())
 
-    def test_step(self, batch, batch_idx: int) -> None:
+    def test_step(self, batch, batch_idx: int):
         x, y = batch
         x = x.squeeze(0)
         y = y.squeeze(0)
@@ -101,6 +104,11 @@ class EmbeddingModel(pl.LightningModule):
             'preds': [],
             'targets': [],
         }
+    
+    def on_test_epoch_end(self) -> None:
+        preds = torch.cat(self.test_outputs['preds'], dim=0)
+        targets = torch.cat(self.test_outputs['targets'], dim=0)
+        self.log_dict(self.test_metrics(preds, targets), sync_dist=True)
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)

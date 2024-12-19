@@ -15,11 +15,12 @@ def train(config: DictConfig):
     
     datamodule = TripletDatamodule(
         config.datamodule.data_path,
-        config.datamodule.number_of_places_per_batch,
-        config.datamodule.number_of_images_per_place,
-        config.datamodule.number_of_batches_per_epoch,
+        config.datamodule.num_of_places_per_batch,
+        config.datamodule.num_of_images_per_place,
+        config.datamodule.num_of_batches_per_epoch,
+        config.datamodule.augment,
         config.datamodule.validation_batch_size,
-        config.datamodule.number_of_workers
+        config.datamodule.num_of_workers
     )
 
     model = EmbeddingModel(
@@ -31,10 +32,10 @@ def train(config: DictConfig):
         config.model.loss_function_name,
         config.model.lr,
         config.model.lr_patience,
-        num_classes=datamodule.get_number_of_places('train')
+        num_classes=datamodule.get_num_of_places('train')
     )
 
-    model_summary_callback = lightning.pytorch.callbacks.ModelSummary(max_depth=1)
+    model_summary_callback = lightning.pytorch.callbacks.ModelSummary(max_depth=-1)
     checkpoint_callback = lightning.pytorch.callbacks.ModelCheckpoint(filename='{epoch}-{val_precision_at_1:.5f}', mode='max',
                                                        monitor='val_precision_at_1', verbose=True, save_last=True)
     early_stop_callback = lightning.pytorch.callbacks.EarlyStopping(monitor='val_precision_at_1', mode='max', patience=50)

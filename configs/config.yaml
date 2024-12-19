@@ -16,11 +16,12 @@ model:
   lr_patience: 20
 
 datamodule:
+  augment: True
   data_path: ${data_path}
   num_of_workers: 16
   num_of_places_per_batch: 15
   num_of_images_per_place: 5
-  num_of_batcher_per_epoch: 100
+  num_of_batches_per_epoch: 100
   validation_batch_size: 128
 
 logger:

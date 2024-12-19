@@ -8,3 +8,6 @@ torch
 albumentations
 lightning
 timm
+pytorch_metric_learning
+hydra-core
+neptune

@@ -1,3 +1,5 @@
+<<<<<<< Updated upstream
+=======
 click
 numpy
 tifffile
@@ -8,3 +10,5 @@ torch
 albumentations
 lightning
 timm
+pytorch_metric_learning
+>>>>>>> Stashed changes

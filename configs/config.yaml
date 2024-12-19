@@ -1,0 +1,30 @@
+run_name: null
+data_path: ${hydra:runtime.cwd}/data/sorted
+
+trainer:
+  resume_from_checkpoint: null
+  precision: bf16-mixed
+
+model:
+  model_name: Basic
+  encoder_name: tf_efficientnetv2_s.in21k
+  embedding_size: 128
+  distance_name: EuclideanDistance
+  miner_name: BatchHardMiner
+  loss_function_name: TripletMarginLoss
+  lr: 1e-3
+  lr_patience: 20
+
+datamodule:
+  data_path: ${data_path}
+  num_of_workers: 16
+  num_of_places_per_batch: 15
+  num_of_images_per_place: 5
+  num_of_batcher_per_epoch: 100
+  validation_batch_size: 128
+
+logger:
+  api_key: ${oc.env:NEPTUNE_API_TOKEN}
+  project: Vision/PlaceRecognition
+  log_model_checkpoints: false
+  name: ${run_name}

@@ -1,5 +1,4 @@
 """Created by Dominik Pieczynski"""
-
 import random
 import shutil
 import zlib
@@ -46,7 +45,7 @@ def tiff_to_jpeg(input_folder: Path, output_folder: Path, quality: int, number_o
 
 
 def convert(input_dir: Path, output_dir: Path, quality: int):
-    input_files = list(input_dir.iterdir())
+    input_files = [file_path for file_path in input_dir.iterdir() if file_path.is_file()]
     if len(input_files) < 5:
         return
 

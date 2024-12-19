@@ -6,3 +6,5 @@ joblib
 tqdm
 torch
 albumentations
+lightning
+timm

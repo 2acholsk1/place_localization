@@ -3,8 +3,8 @@ from pytorch_metric_learning import losses, miners, distances
 
 def get_distance(distance_name: str) -> distances.BaseDistance:
     match distance_name:
-        case 'CosineSimilarity':
-            return distances.CosineSimilarity()
+        case 'EuclideanDistance':
+            return distances.LpDistance(normalize_embeddings=True, p=2)
         case _:
             raise NotImplementedError(f'Unsupported distance: {distance_name}')
 
@@ -20,7 +20,7 @@ def get_loss_function(loss_name: str, distance: distances.BaseDistance, num_clas
 
 def get_miner(miner_name: str, distance: distances.BaseDistance) -> miners.BaseMiner:
     match miner_name:
-        case 'MultiSimilarityMiner':
-            return miners.MultiSimilarityMiner(distance=distance)
+        case 'BatchHardMiner':
+            return miners.BatchHardMiner(distance=distance)
         case _:
             raise NotImplementedError(f'Unsupported miner: {miner_name}')

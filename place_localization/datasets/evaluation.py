@@ -9,8 +9,7 @@ class EvaluationDataset(Dataset):
     def __init__(self,
                  places_dirs: list[Path],
                  num_of_imgs_per_place: int,
-                 transforms: A.Compose,
-                 place_transforms: A.Compose):
+                 transforms: A.Compose):
         super().__init__()
         
         self._places_images: list[list[Path]] = [
@@ -20,7 +19,6 @@ class EvaluationDataset(Dataset):
         
         self._num_of_imgs_per_place = num_of_imgs_per_place
         self._transforms = transforms
-        self._place_transorms = place_transforms 
 
     def __len__(self) -> int:
         return len(self._places_images) * self._num_of_imgs_per_place

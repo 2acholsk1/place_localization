@@ -34,7 +34,7 @@ class EmbeddingModel(pl.LightningModule):
                                              pretrained=True,
                                              num_classes=0,
                                              global_pool='',
-                                             img_size=(512, 512))
+                                             )
                 self.network = nn.Sequential(
                     backbone,
                     Normalize(),
@@ -48,7 +48,7 @@ class EmbeddingModel(pl.LightningModule):
 
         distance = get_distance(dist_name)
         self.miner = get_miner(miner_name, distance)
-        self.loss = get_loss_function(loss_func_name, dist_name, num_classes, embedding_size)
+        self.loss = get_loss_function(loss_func_name, distance, num_classes, embedding_size)
 
         self.val_outputs = None
         self.test_outputs = None
@@ -60,8 +60,8 @@ class EmbeddingModel(pl.LightningModule):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.network(x)
 
-    def training_step(self, batch, batch_idx: int) -> Optional[torch.Tensor]:
-        x, y = batch,
+    def training_step(self, batch, batch_idx: int):
+        x, y = batch
         x = x.squeeze(0)
         y = y.squeeze(0)
         y_pred = self.forward(x)
@@ -69,7 +69,7 @@ class EmbeddingModel(pl.LightningModule):
         self.log('train_loss', loss, sync_dist=True, prog_bar=True)
         return loss
 
-    def validation_step(self, batch, batch_idx: int) -> None:
+    def validation_step(self, batch, batch_idx: int):
         x, y = batch
         x = x.squeeze(0)
         y = y.squeeze(0)
@@ -77,7 +77,7 @@ class EmbeddingModel(pl.LightningModule):
         self.val_outputs['preds'].append(y_pred.cpu())
         self.val_outputs['targets'].append(y.cpu())
 
-    def test_step(self, batch, batch_idx: int) -> None:
+    def test_step(self, batch, batch_idx: int):
         x, y = batch
         x = x.squeeze(0)
         y = y.squeeze(0)
@@ -101,6 +101,11 @@ class EmbeddingModel(pl.LightningModule):
             'preds': [],
             'targets': [],
         }
+    
+    def on_test_epoch_end(self) -> None:
+        preds = torch.cat(self.test_outputs['preds'], dim=0)
+        targets = torch.cat(self.test_outputs['targets'], dim=0)
+        self.log_dict(self.test_metrics(preds, targets), sync_dist=True)
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)

@@ -10,6 +10,7 @@ from torchmetrics import Metric
 class MultiMetric(Metric):
     def __init__(self, distance: BaseDistance):
         super().__init__()
+        self.count = 0
 
         knn = CustomKNN(distance, batch_size=256)
         self.calculator = AccuracyCalculator(include=('precision_at_1', 'mean_average_precision'), k=4,

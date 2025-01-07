@@ -1,6 +1,10 @@
 # Data
 data/
 outputs/
+
+# models
+*.ckpt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -89,15 +89,15 @@ class TripletDatamodule(pl.LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(
-            self.train_dataset, batch_size=3, num_workers=self._num_of_workers
+            self.train_dataset, batch_size=1, num_workers=self._num_of_workers
         )
 
     def val_dataloader(self):
         return DataLoader(
-            self.val_dataset, batch_size=3, num_workers=self._num_of_workers
+            self.val_dataset, batch_size=self._val_batch_size, num_workers=self._num_of_workers
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test_dataset, batch_size=3, num_workers=self._num_of_workers
+            self.test_dataset, batch_size=self._val_batch_size, num_workers=self._num_of_workers
         )

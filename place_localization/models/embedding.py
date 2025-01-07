@@ -48,7 +48,7 @@ class EmbeddingModel(pl.LightningModule):
 
         distance = get_distance(dist_name)
         self.miner = get_miner(miner_name, distance)
-        self.loss = get_loss_function(loss_func_name, dist_name, num_classes, embedding_size)
+        self.loss = get_loss_function(loss_func_name, distance, num_classes, embedding_size)
 
         self.val_outputs = None
         self.test_outputs = None
@@ -58,11 +58,10 @@ class EmbeddingModel(pl.LightningModule):
         self.test_metrics = metrics.clone(prefix='test_')
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # print(x.shape)
         return self.network(x)
 
     def training_step(self, batch, batch_idx: int):
-        x, y = batch,
+        x, y = batch
         x = x.squeeze(0)
         y = y.squeeze(0)
         y_pred = self.forward(x)
@@ -72,8 +71,6 @@ class EmbeddingModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx: int):
         x, y = batch
-        print(x.shape)
-        print(y.shape)
         x = x.squeeze(0)
         y = y.squeeze(0)
         y_pred = self.forward(x)

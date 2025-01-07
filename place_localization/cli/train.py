@@ -4,6 +4,7 @@ import lightning.pytorch as pl
 import lightning.pytorch.loggers
 import lightning.pytorch.callbacks
 from omegaconf import DictConfig
+import lightning.pytorch.strategies
 
 from place_localization.datamodules.triplet import TripletDatamodule
 from place_localization.models.embedding import EmbeddingModel
@@ -56,7 +57,8 @@ def train(config: DictConfig):
         precision=config.trainer.precision,
         benchmark=True,
         sync_batchnorm=True,
-        max_epochs=10
+        max_epochs=10,
+        strategy='ddp'
     )
     
     trainer.fit(model=model, datamodule=datamodule)

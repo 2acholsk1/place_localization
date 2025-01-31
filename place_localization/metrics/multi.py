@@ -6,6 +6,7 @@ from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
 from pytorch_metric_learning.utils.inference import CustomKNN
 from torchmetrics import Metric
 
+from place_localization.metrics.precisions_at_x import ModifiedAccuracyCalculator
 
 class MultiMetric(Metric):
     def __init__(self, distance: BaseDistance):
@@ -13,7 +14,8 @@ class MultiMetric(Metric):
         self.count = 0
 
         knn = CustomKNN(distance, batch_size=256)
-        self.calculator = AccuracyCalculator(include=('precision_at_1', 'mean_average_precision'), k=4,
+        self.calculator = ModifiedAccuracyCalculator(include=('precision_at_1', 'mean_average_precision', 'precision_at_5', 'precision_at_10', 'precision_at_25'), 
+                                             k=25,
                                              device=torch.device('cpu'),
                                              knn_func=knn)
         self.metric_names = self.calculator.get_curr_metrics()
@@ -26,7 +28,12 @@ class MultiMetric(Metric):
     def update(self, vectors, labels):
         vectors = vectors.detach().cpu() if vectors.requires_grad else vectors.cpu()
         labels = labels.detach().cpu() if labels.requires_grad else labels.cpu()
-        results = self.calculator.get_accuracy(vectors, labels, include=('precision_at_1', 'mean_average_precision'))
+        results = self.calculator.get_accuracy(
+            vectors,
+            labels,
+            include=self.metric_names
+        )
+
         for metric_name, metric_value in results.items():
             metric_state = getattr(self, metric_name)
             metric_state += metric_value

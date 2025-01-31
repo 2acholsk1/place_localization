@@ -33,14 +33,15 @@ class TripletDatamodule(pl.LightningDataModule):
         ])
         
         self._augmentations = A.Compose([
-            A.CenterCrop(512, 512),
-            A.Normalize(timm.data.IMAGENET_DEFAULT_MEAN, timm.data.IMAGENET_DEFAULT_STD),
+            albumentations.Rotate(limit=10, p=1.0),
+            albumentations.Affine(scale=(0.9, 1.1), translate_percent=(-0.1, 0.1), p=1.0),
+            albumentations.CenterCrop(512, 512),
+            albumentations.Normalize(timm.data.IMAGENET_DEFAULT_MEAN, timm.data.IMAGENET_DEFAULT_STD),
             albumentations.pytorch.transforms.ToTensorV2()
         ]) if augment else self._transforms
 
         self._place_augmentations = A.Compose([
             A.Affine(translate_percent=0.2, rotate=360, fit_output=True),
-            A.Flip(),
         ], additional_targets={f'image{i}': 'image' for i in range(1, num_of_imgs_per_place)})
         
         self.train_dataset = None

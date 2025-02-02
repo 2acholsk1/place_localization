@@ -57,7 +57,7 @@ def train(config: DictConfig):
         precision=config.trainer.precision,
         benchmark=True,
         sync_batchnorm=True,
-        max_epochs=10,
+        max_epochs=1000,
         strategy='ddp'
     )
     

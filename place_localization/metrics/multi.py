@@ -29,10 +29,12 @@ class MultiMetric(Metric):
         vectors = vectors.detach().cpu() if vectors.requires_grad else vectors.cpu()
         labels = labels.detach().cpu() if labels.requires_grad else labels.cpu()
         results = self.calculator.get_accuracy(
-            vectors,
-            labels,
-            include=self.metric_names
+            query=vectors,
+            query_labels=labels,
+            include=self.metric_names,
+            ref_includes_query=False,
         )
+
 
         for metric_name, metric_value in results.items():
             metric_state = getattr(self, metric_name)

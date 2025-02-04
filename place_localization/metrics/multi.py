@@ -14,7 +14,17 @@ class MultiMetric(Metric):
         self.count = 0
 
         knn = CustomKNN(distance, batch_size=256)
-        self.calculator = ModifiedAccuracyCalculator(include=('precision_at_1', 'mean_average_precision', 'precision_at_5', 'precision_at_10', 'precision_at_25'), 
+        self.calculator = ModifiedAccuracyCalculator(include=(
+                                            'mean_average_precision',
+                                            'precision_at_1',
+                                            'precision_at_5',
+                                            'precision_at_10',
+                                            'precision_at_25',
+                                            'recall_at_1',
+                                            'recall_at_5',
+                                            'recall_at_10',
+                                            'recall_at_25'
+                                            ), 
                                              k=25,
                                              device=torch.device('cpu'),
                                              knn_func=knn)
@@ -30,9 +40,11 @@ class MultiMetric(Metric):
         labels = labels.detach().cpu() if labels.requires_grad else labels.cpu()
         results = self.calculator.get_accuracy(
             query=vectors,
+            reference=None,
             query_labels=labels,
-            include=self.metric_names,
+            reference_labels=None,
             ref_includes_query=False,
+            include=self.metric_names
         )
 
 

@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from torch import nn
 from lightning import pytorch as pl
 from torchmetrics import MetricCollection
-from typing import Optional
 
 from place_localization.metrics.multi import MultiMetric
 from place_localization.models.gem import GeM
@@ -108,7 +107,13 @@ class EmbeddingModel(pl.LightningModule):
         self.log_dict(self.test_metrics(preds, targets), sync_dist=True)
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=self.lr_patience)
+        return {
+            'optimizer': optimizer,
+            'lr_scheduler': scheduler,
+            'monitor': 'val_precision_at_1',
+        }
 
 
 class Normalize(nn.Module):

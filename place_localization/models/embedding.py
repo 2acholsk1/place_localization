@@ -50,11 +50,15 @@ class EmbeddingModel(pl.LightningModule):
         self.loss = get_loss_function(loss_func_name, distance, num_classes, embedding_size)
 
         self.val_outputs = None
-        self.test_outputs = None
-        
+        self.easy_test_outputs = None
+        self.medium_test_outputs = None
+        self.hard_test_outputs = None
+
         metrics = MetricCollection(MultiMetric(distance=distance))
         self.val_metrics = metrics.clone(prefix='val_')
-        self.test_metrics = metrics.clone(prefix='test_')
+        self.easy_test_metrics = metrics.clone(prefix='test_easy_')
+        self.medium_test_metrics = metrics.clone(prefix='test_medium_')
+        self.hard_test_metrics = metrics.clone(prefix='test_hard_')
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.network(x)
@@ -76,13 +80,22 @@ class EmbeddingModel(pl.LightningModule):
         self.val_outputs['preds'].append(y_pred.cpu())
         self.val_outputs['targets'].append(y.cpu())
 
-    def test_step(self, batch, batch_idx: int):
+    def test_step(self, batch, batch_idx: int, dataloader_idx: int):
         x, y = batch
         x = x.squeeze(0)
         y = y.squeeze(0)
         y_pred = self.forward(x)
-        self.test_outputs['preds'].append(y_pred.cpu())
-        self.test_outputs['targets'].append(y.cpu())
+
+        match dataloader_idx:
+            case 0:
+                self.easy_test_outputs['preds'].append(y_pred.cpu())
+                self.easy_test_outputs['targets'].append(y.cpu())
+            case 1:
+                self.medium_test_outputs['preds'].append(y_pred.cpu())
+                self.medium_test_outputs['targets'].append(y.cpu())
+            case 2:
+                self.hard_test_outputs['preds'].append(y_pred.cpu())
+                self.hard_test_outputs['targets'].append(y.cpu())
 
     def on_validation_epoch_start(self) -> None:
         self.val_outputs = {
@@ -96,15 +109,31 @@ class EmbeddingModel(pl.LightningModule):
         self.log_dict(self.val_metrics(preds, targets), sync_dist=True)
 
     def on_test_epoch_start(self) -> None:
-        self.test_outputs = {
+        self.easy_test_outputs = {
+            'preds': [],
+            'targets': [],
+        }
+        self.medium_test_outputs = {
+            'preds': [],
+            'targets': [],
+        }
+        self.hard_test_outputs = {
             'preds': [],
             'targets': [],
         }
     
     def on_test_epoch_end(self) -> None:
-        preds = torch.cat(self.test_outputs['preds'], dim=0)
-        targets = torch.cat(self.test_outputs['targets'], dim=0)
-        self.log_dict(self.test_metrics(preds, targets), sync_dist=True)
+        preds = torch.cat(self.easy_test_outputs['preds'], dim=0)
+        targets = torch.cat(self.easy_test_outputs['targets'], dim=0)
+        self.log_dict(self.easy_test_metrics(preds, targets), sync_dist=True)
+
+        preds = torch.cat(self.medium_test_outputs['preds'], dim=0)
+        targets = torch.cat(self.medium_test_outputs['targets'], dim=0)
+        self.log_dict(self.medium_test_metrics(preds, targets), sync_dist=True)
+
+        preds = torch.cat(self.hard_test_outputs['preds'], dim=0)
+        targets = torch.cat(self.hard_test_outputs['targets'], dim=0)
+        self.log_dict(self.hard_test_metrics(preds, targets), sync_dist=True)
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)

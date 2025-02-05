@@ -1,5 +1,5 @@
 run_name: null
-data_path: ${hydra:runtime.cwd}/data/sorted
+data_path: ${hydra:runtime.cwd}/data/augmented
 
 trainer:
   resume_from_checkpoint: null
@@ -12,16 +12,16 @@ model:
   distance_name: EuclideanDistance
   miner_name: BatchHardMiner
   loss_function_name: TripletMarginLoss
-  lr: 5e-4
+  lr: 3e-4
   lr_patience: 10
 
 datamodule:
   augment: True
   data_path: ${data_path}
   num_of_workers: 24
-  num_of_places_per_batch: 15
+  num_of_places_per_batch: 20
   num_of_images_per_place: 5
-  num_of_batches_per_epoch: 1000
+  num_of_batches_per_epoch: 3500
   validation_batch_size: 128
 
 logger:

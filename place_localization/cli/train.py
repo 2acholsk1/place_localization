@@ -57,8 +57,12 @@ def train(config: DictConfig):
         precision=config.trainer.precision,
         benchmark=True,
         sync_batchnorm=True,
-        max_epochs=75,
-        strategy='ddp'
+        max_epochs=125,
+        strategy=lightning.pytorch.strategies.DDPStrategy(
+            find_unused_parameters=False,
+            gradient_as_bucket_view=True,
+            static_graph=True
+        )
     )
     
     trainer.fit(model=model, datamodule=datamodule)

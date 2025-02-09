@@ -1,5 +1,5 @@
 run_name: null
-data_path: ${hydra:runtime.cwd}/data/sorted
+data_path: ${hydra:runtime.cwd}/naip_data/augmented
 
 trainer:
   resume_from_checkpoint: null
@@ -7,21 +7,21 @@ trainer:
 
 model:
   model_name: Basic
-  encoder_name: tf_efficientnetv2_s.in21k
+  encoder_name: resnet18
   embedding_size: 128
   distance_name: EuclideanDistance
   miner_name: BatchHardMiner
   loss_function_name: TripletMarginLoss
-  lr: 1e-3
-  lr_patience: 20
+  lr: 3e-4
+  lr_patience: 10
 
 datamodule:
   augment: True
   data_path: ${data_path}
-  num_of_workers: 16
+  num_of_workers: 24
   num_of_places_per_batch: 15
   num_of_images_per_place: 5
-  num_of_batches_per_epoch: 100
+  num_of_batches_per_epoch: 2000
   validation_batch_size: 128
 
 logger:

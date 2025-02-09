@@ -1,6 +1,8 @@
 # Data
 data/
+naip_data/
 outputs/
+.neptune/
 
 # models
 *.ckpt

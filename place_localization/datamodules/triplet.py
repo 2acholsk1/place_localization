@@ -33,35 +33,40 @@ class TripletDatamodule(pl.LightningDataModule):
         ])
         
         self._augmentations = A.Compose([
-            A.CenterCrop(512, 512),
-            A.Normalize(timm.data.IMAGENET_DEFAULT_MEAN, timm.data.IMAGENET_DEFAULT_STD),
+            albumentations.Rotate(limit=10, p=1.0),
+            albumentations.Affine(scale=(0.9, 1.1), translate_percent=(-0.1, 0.1), p=1.0),
+            albumentations.CenterCrop(512, 512),
+            albumentations.Normalize(timm.data.IMAGENET_DEFAULT_MEAN, timm.data.IMAGENET_DEFAULT_STD),
             albumentations.pytorch.transforms.ToTensorV2()
         ]) if augment else self._transforms
 
         self._place_augmentations = A.Compose([
             A.Affine(translate_percent=0.2, rotate=360, fit_output=True),
-            A.Flip(),
         ], additional_targets={f'image{i}': 'image' for i in range(1, num_of_imgs_per_place)})
         
         self.train_dataset = None
         self.val_dataset = None
-        self.test_dataset = None
+        self.easy_test_dataset = None
+        self.medium_test_dataset = None
+        self.hard_test_dataset = None
 
     def setup(self, stage):
-        train_places_dirs = self.get_places_dirs(Path(self._data_path) / 'train')
+        train_places_dirs = self.get_places_dirs(Path(self._data_path) / 'train'/ 'train')
         val_places_dirs = self.get_places_dirs(Path(self._data_path) / 'val')
-        test_places_dirs = self.get_places_dirs(Path(self._data_path) / 'test')
+        easy_test_places_dirs = self.get_places_dirs(Path(self._data_path) / 'easy_test'/ 'test')
+        medium_test_places_dirs = self.get_places_dirs(Path(self._data_path) / 'medium_test')
+        hard_test_places_dirs = self.get_places_dirs(Path(self._data_path) / 'hard_test')
         
         print(f'Number of train places: {len(train_places_dirs)}')
         print(f'Number of val places: {len(val_places_dirs)}')
-        print(f'Number of test places: {len(test_places_dirs)}')
+        print(f'Number of test places: {len(easy_test_places_dirs)}')
 
         self.train_dataset = TripletDataset(
             train_places_dirs,
             self._num_of_places_per_batch,
             self._num_imgs_per_place,
             self._num_of_batch_per_epoch,
-            self._transforms,
+            self._augmentations,
             self._place_augmentations
         )
 
@@ -71,10 +76,22 @@ class TripletDatamodule(pl.LightningDataModule):
             self._transforms
         )
         
-        self.test_dataset = EvaluationDataset(
-            test_places_dirs,
+        self.easy_test_dataset = EvaluationDataset(
+            easy_test_places_dirs,
             self._num_imgs_per_place,
-            self._transforms
+            self._transforms,
+        )
+
+        self.medium_test_dataset = EvaluationDataset(
+            medium_test_places_dirs,
+            self._num_imgs_per_place,
+            self._transforms,
+        )
+
+        self.hard_test_dataset = EvaluationDataset(
+            hard_test_places_dirs,
+            self._num_imgs_per_place,
+            self._transforms,
         )
 
     def get_places_dirs(self, data_dir: Path) -> list[Path]:
@@ -98,6 +115,14 @@ class TripletDatamodule(pl.LightningDataModule):
         )
 
     def test_dataloader(self):
-        return DataLoader(
-            self.test_dataset, batch_size=self._val_batch_size, num_workers=self._num_of_workers
+        return (
+            DataLoader(
+                self.easy_test_dataset, batch_size=self._val_batch_size, num_workers=self._num_of_workers,
+            ),
+            DataLoader(
+                self.medium_test_dataset, batch_size=self._val_batch_size, num_workers=self._num_of_workers,
+            ),
+            DataLoader(
+                self.hard_test_dataset, batch_size=self._val_batch_size, num_workers=self._num_of_workers,
+            )
         )

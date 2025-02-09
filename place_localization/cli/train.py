@@ -39,10 +39,10 @@ def train(config: DictConfig):
     model_summary_callback = lightning.pytorch.callbacks.ModelSummary(max_depth=-1)
     checkpoint_callback = lightning.pytorch.callbacks.ModelCheckpoint(filename='{epoch}-{val_precision_at_1:.5f}', mode='max',
                                                        monitor='val_precision_at_1', verbose=True, save_last=True)
-    early_stop_callback = lightning.pytorch.callbacks.EarlyStopping(monitor='val_precision_at_1', mode='max', patience=50)
+    early_stop_callback = lightning.pytorch.callbacks.EarlyStopping(monitor='val_precision_at_1', mode='max', patience=10)
     lr_monitor = lightning.pytorch.callbacks.LearningRateMonitor(logging_interval='epoch')
 
-    logger = lightning.pytorch.loggers.NeptuneLogger(project=config.logger.project)
+    logger = lightning.pytorch.loggers.NeptuneLogger(project=config.logger.project, log_model_checkpoints=config.logger.log_model_checkpoints)
 
     trainer = pl.Trainer(
         logger=logger,
@@ -57,8 +57,12 @@ def train(config: DictConfig):
         precision=config.trainer.precision,
         benchmark=True,
         sync_batchnorm=True,
-        max_epochs=10,
-        strategy='ddp'
+        max_epochs=100,
+        strategy=lightning.pytorch.strategies.DDPStrategy(
+            find_unused_parameters=False,
+            gradient_as_bucket_view=True,
+            static_graph=True
+        )
     )
     
     trainer.fit(model=model, datamodule=datamodule)

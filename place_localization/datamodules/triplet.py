@@ -51,9 +51,9 @@ class TripletDatamodule(pl.LightningDataModule):
         self.hard_test_dataset = None
 
     def setup(self, stage):
-        train_places_dirs = self.get_places_dirs(Path(self._data_path) / 'train')
+        train_places_dirs = self.get_places_dirs(Path(self._data_path) / 'train'/ 'train')
         val_places_dirs = self.get_places_dirs(Path(self._data_path) / 'val')
-        easy_test_places_dirs = self.get_places_dirs(Path(self._data_path) / 'easy_test')
+        easy_test_places_dirs = self.get_places_dirs(Path(self._data_path) / 'easy_test'/ 'test')
         medium_test_places_dirs = self.get_places_dirs(Path(self._data_path) / 'medium_test')
         hard_test_places_dirs = self.get_places_dirs(Path(self._data_path) / 'hard_test')
         
@@ -66,7 +66,7 @@ class TripletDatamodule(pl.LightningDataModule):
             self._num_of_places_per_batch,
             self._num_imgs_per_place,
             self._num_of_batch_per_epoch,
-            self._transforms,
+            self._augmentations,
             self._place_augmentations
         )
 

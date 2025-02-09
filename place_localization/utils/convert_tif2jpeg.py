@@ -44,12 +44,39 @@ def tiff_to_jpeg(input_folder: Path, output_folder: Path, quality: int, number_o
             shutil.rmtree(current_output_dir)
 
 
+# def convert(input_dir: Path, output_dir: Path, quality: int):
+#     input_files = [file_path for file_path in input_dir.iterdir() if file_path.is_file()]
+#     if len(input_files) < 5:
+#         return
+
+#     for file_path in random.sample(input_files, k=5):
+#         output_path = output_dir / f'{file_path.stem}.jpg'
+#         if output_path.exists():
+#             continue
+
+#         try:
+#             image = tifffile.imread(str(file_path))
+#         except (ValueError, TiffFileError, zlib.error):
+#             file_path.unlink()
+#             return
+
+#         if not np.any(image):
+#             return
+
+#         # Convert to channels-last uint8
+#         image = (image / image.max() * 255).astype('uint8')
+#         image = image.transpose(1, 2, 0)
+
+#         # Convert to JPEG
+#         output_dir.mkdir(parents=True, exist_ok=True)
+#         Image.fromarray(image).save(str(output_path), quality=quality)
+
 def convert(input_dir: Path, output_dir: Path, quality: int):
     input_files = [file_path for file_path in input_dir.iterdir() if file_path.is_file()]
     if len(input_files) < 5:
         return
 
-    for file_path in random.sample(input_files, k=5):
+    for file_path in input_files:
         output_path = output_dir / f'{file_path.stem}.jpg'
         if output_path.exists():
             continue
@@ -58,19 +85,16 @@ def convert(input_dir: Path, output_dir: Path, quality: int):
             image = tifffile.imread(str(file_path))
         except (ValueError, TiffFileError, zlib.error):
             file_path.unlink()
-            return
+            continue
 
         if not np.any(image):
-            return
+            continue
 
-        # Convert to channels-last uint8
         image = (image / image.max() * 255).astype('uint8')
         image = image.transpose(1, 2, 0)
 
-        # Convert to JPEG
         output_dir.mkdir(parents=True, exist_ok=True)
         Image.fromarray(image).save(str(output_path), quality=quality)
-
 
 if __name__ == '__main__':
     tiff_to_jpeg()

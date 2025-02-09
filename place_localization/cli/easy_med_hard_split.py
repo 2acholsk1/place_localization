@@ -16,8 +16,8 @@ from place_localization.utils.joblib_tqdm import ProgressParallel
 @click.option('--output-dir', type=click.Path(file_okay=False, path_type=Path), required=True)
 @click.option('--quality', default=95, help='JPEG quality')
 def easy_med_hard_split(split_data_path: Path, output_dir: Path, quality: int):
-    # print('Copying train')
-    # subprocess.run(['cp', '-r', '--reflink=auto', split_data_path / 'train',  output_dir / 'train'])
+    print('Copying train')
+    subprocess.run(['cp', '-r', '--reflink=auto', split_data_path / 'train',  output_dir / 'train'])
 
     print('Copying test')
     subprocess.run(['cp', '-r', '--reflink=auto', split_data_path / 'test',  output_dir / 'easy_test'])
@@ -47,19 +47,19 @@ def easy_med_hard_split(split_data_path: Path, output_dir: Path, quality: int):
         albumentations.CenterCrop(512, 512),
     ])
 
-    # print('Processing val')
-    # val_places_dirs = sorted((split_data_path / 'val').iterdir())
-    # ProgressParallel(n_jobs=-2, total=len(val_places_dirs))(
-    #     delayed(process_val_dir)(val_place_dir, output_dir, hard_augmentations, quality)
-    #     for val_place_dir in val_places_dirs
-    # )
+    print('Processing val')
+    val_places_dirs = sorted((split_data_path / 'val').iterdir())
+    ProgressParallel(n_jobs=-2, total=len(val_places_dirs))(
+        delayed(process_val_dir)(val_place_dir, output_dir, hard_augmentations, quality)
+        for val_place_dir in val_places_dirs
+    )
 
-    # print('Processing test')
-    # test_places_dirs = sorted((split_data_path / 'test').iterdir())
-    # ProgressParallel(n_jobs=-2, total=len(test_places_dirs))(
-    #     delayed(process_test_dir)(test_place_dir, output_dir, medium_augmentations, hard_augmentations, quality)
-    #     for test_place_dir in test_places_dirs
-    # )
+    print('Processing test')
+    test_places_dirs = sorted((split_data_path / 'test').iterdir())
+    ProgressParallel(n_jobs=-2, total=len(test_places_dirs))(
+        delayed(process_test_dir)(test_place_dir, output_dir, medium_augmentations, hard_augmentations, quality)
+        for test_place_dir in test_places_dirs
+    )
 
 
 def process_test_dir(place_dir: Path, output_dir: Path,
@@ -70,7 +70,7 @@ def process_test_dir(place_dir: Path, output_dir: Path,
     current_hard_output_dir = output_dir / 'hard_test' / place_dir.name
     current_hard_output_dir.mkdir(parents=True, exist_ok=True)
 
-    for image_path in sorted(place_dir.iterdir())[:5]:
+    for image_path in sorted(place_dir.iterdir()):
         original_image = np.asarray(Image.open(image_path))
         medium_image = medium_augmentations(image=original_image)['image']
         hard_image = hard_augmentations(image=original_image)['image']
@@ -84,7 +84,7 @@ def process_val_dir(place_dir: Path, output_dir: Path,
     current_output_dir = output_dir / 'val' / place_dir.name
     current_output_dir.mkdir(parents=True, exist_ok=True)
 
-    for image_path in sorted(place_dir.iterdir())[:5]:
+    for image_path in sorted(place_dir.iterdir()):
         image = np.asarray(Image.open(image_path))
         image = hard_augmentations(image=image)['image']
         Image.fromarray(image).save(current_output_dir / image_path.name, quality=quality)

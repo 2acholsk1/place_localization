@@ -49,6 +49,7 @@ class TripletDatamodule(pl.LightningDataModule):
         self.easy_test_dataset = None
         self.medium_test_dataset = None
         self.hard_test_dataset = None
+        self.predict_dataset = None
 
     def setup(self, stage):
         train_places_dirs = self.get_places_dirs(Path(self._data_path) / 'train'/ 'train')
@@ -94,6 +95,13 @@ class TripletDatamodule(pl.LightningDataModule):
             self._transforms,
         )
 
+        self.predict_dataset = EvaluationDataset(
+            easy_test_places_dirs,
+            self._num_imgs_per_place,
+            self._transforms,
+            return_indices=True
+        )
+
     def get_places_dirs(self, data_dir: Path) -> list[Path]:
         return sorted(
             [place_dir for place_dir in data_dir.iterdir()
@@ -125,4 +133,9 @@ class TripletDatamodule(pl.LightningDataModule):
             DataLoader(
                 self.hard_test_dataset, batch_size=self._val_batch_size, num_workers=self._num_of_workers,
             )
+        )
+
+    def predict_dataloader(self):
+        return DataLoader(
+            self.predict_dataset, batch_size=self._val_batch_size, num_workers=self._num_of_workers,
         )

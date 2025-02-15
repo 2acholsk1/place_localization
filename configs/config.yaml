@@ -7,13 +7,13 @@ trainer:
 
 model:
   model_name: Basic
-  encoder_name: resnet18
+  encoder_name: resnet50
   embedding_size: 128
   distance_name: EuclideanDistance
   miner_name: BatchHardMiner
   loss_function_name: TripletMarginLoss
   lr: 3e-4
-  lr_patience: 10
+  lr_patience: 15
 
 datamodule:
   augment: True

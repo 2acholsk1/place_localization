@@ -30,7 +30,7 @@ class EmbeddingModel(pl.LightningModule):
         match(model_name):
             case 'Basic':
                 backbone = timm.create_model(encoder_name,
-                                             pretrained=True,
+                                             pretrained=True,   
                                              num_classes=0,
                                              global_pool='',
                                              )
@@ -38,8 +38,10 @@ class EmbeddingModel(pl.LightningModule):
                     backbone,
                     Normalize(),
                     GeM(),
+                    # nn.AdaptiveAvgPool2d((1, 1)),
                     nn.Flatten(),
                     nn.Linear(in_features=backbone.num_features, out_features=embedding_size)
+                    # nn.Linear(in_features=1280, out_features=embedding_size)
                 )
             
             case _:
@@ -62,6 +64,7 @@ class EmbeddingModel(pl.LightningModule):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.network(x)
+
 
     def training_step(self, batch, batch_idx: int):
         x, y = batch
@@ -156,9 +159,23 @@ class Normalize(nn.Module):
         return F.normalize(x, p=self._order, dim=self._dim)
 
 
+
 if __name__ == '__main__':
     def check_model_output():
-        model = EmbeddingModel(model_name='Basic', encoder_name='resnet18', lr=3e-4, lr_patience=10)
-        print(model(torch.randn(4, 3, 224, 224)).shape)
+        model = EmbeddingModel(
+            model_name='Basic',
+            encoder_name='efficientnet_b5',
+            embedding_size=128,
+            dist_name='EuclideanDistance',
+            miner_name='BatchHardMiner',
+            loss_func_name='TripletMarginLoss',
+            lr=3e-4,
+            lr_patience=10,
+            num_classes=1000
+        )
+        x = torch.randn(1, 3, 512, 512)  # Symulacja batcha obrazów
+
+        output = model(x)
+        print("Output shape:", output.shape)
 
     check_model_output()

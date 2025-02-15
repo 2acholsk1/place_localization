@@ -7,7 +7,7 @@ import torch
 from lightning import Trainer
 from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
 
-from place_localization.datamodules.triplet import TripletDataModule
+from place_localization.datamodules.triplet import TripletDatamodule
 from place_localization.models.embedding import EmbeddingModel
 
 
@@ -17,14 +17,14 @@ from place_localization.models.embedding import EmbeddingModel
 @click.option('--device', type=click.Choice(['cpu', 'cuda']), default='cuda')
 def evaluate(model_path: Path, data_path: Path, device: str):
     model = EmbeddingModel.load_from_checkpoint(model_path).eval()
-    data_module = TripletDataModule(
+    data_module = TripletDatamodule(
         data_path=data_path,
-        number_of_places_per_batch=30,
-        number_of_images_per_place=2,
-        number_of_batches_per_epoch=1,
+        num_of_places_per_batch=30,
+        num_of_imgs_per_place=2,
+        num_of_batch_per_epoch=1,
         augment=False,
-        validation_batch_size=32,
-        number_of_workers=8
+        val_batch_size=32,
+        num_of_workers=8
     )
 
     trainer = Trainer(accelerator=device)

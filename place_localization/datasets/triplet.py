@@ -12,7 +12,7 @@ class TripletDataset(Dataset):
                  num_of_places_per_batch: int,
                  num_of_imgs_per_place: int,
                  num_of_batches_per_epoch: int,
-                 transorms: Callable,
+                 transforms: Callable,
                  place_transforms: Callable):
         super().__init__()
 
@@ -24,7 +24,7 @@ class TripletDataset(Dataset):
         self._num_of_places = num_of_places_per_batch
         self._num_of_imgs_per_place = num_of_imgs_per_place
         self._num_of_batches_per_epoch = num_of_batches_per_epoch
-        self._transforms = transorms
+        self._transforms = transforms
         self._place_transforms = place_transforms
 
     def __len__(self) -> int:

@@ -27,7 +27,8 @@ class TripletDatamodule(pl.LightningDataModule):
         self._num_of_workers = num_of_workers
 
         self._transforms = A.Compose([
-            A.CenterCrop(512, 512),
+            A.CenterCrop(224, 224),
+            # A.CenterCrop(512, 512),
             A.Normalize(timm.data.IMAGENET_DEFAULT_MEAN, timm.data.IMAGENET_DEFAULT_STD),
             albumentations.pytorch.transforms.ToTensorV2()
         ])
@@ -35,7 +36,8 @@ class TripletDatamodule(pl.LightningDataModule):
         self._augmentations = A.Compose([
             albumentations.Rotate(limit=10, p=1.0),
             albumentations.Affine(scale=(0.9, 1.1), translate_percent=(-0.1, 0.1), p=1.0),
-            albumentations.CenterCrop(512, 512),
+            albumentations.CenterCrop(224, 224),
+            # albumentations.CenterCrop(512, 512),
             albumentations.Normalize(timm.data.IMAGENET_DEFAULT_MEAN, timm.data.IMAGENET_DEFAULT_STD),
             albumentations.pytorch.transforms.ToTensorV2()
         ]) if augment else self._transforms

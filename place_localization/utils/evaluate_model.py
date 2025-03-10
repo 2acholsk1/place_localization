@@ -131,8 +131,8 @@ def evaluate_model(model, dataloader, device, k=5, save_dir="results", num_sampl
 
 
 if __name__ == '__main__':
-    ckpt_path = ".neptune/PLAC-388/PLAC-388/checkpoints/epoch=18-val_precision_at_1=0.70361.ckpt"  # 🔹 Podaj ścieżkę do pliku .ckpt
-    dataset_path = "naip_data/augmented/eval"  # 🔹 Podaj ścieżkę do datasetu
+    ckpt_path = ".neptune/PLAC-388/PLAC-388/checkpoints/epoch=18-val_precision_at_1=0.70361.ckpt"
+    dataset_path = "naip_data/augmented/eval"
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = load_model_from_ckpt(ckpt_path, device)

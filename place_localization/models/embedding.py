@@ -48,7 +48,8 @@ class EmbeddingModel(pl.LightningModule):
                 raise NotImplementedError(f'Unsupported model: {model_name}')
 
         distance = get_distance(dist_name)
-        self.miner = get_miner(miner_name, distance)
+        self.miner = None
+        # self.miner = get_miner(miner_name, distance)
         self.loss = get_loss_function(loss_func_name, distance, num_classes, embedding_size)
 
         self.val_outputs = None
@@ -71,7 +72,8 @@ class EmbeddingModel(pl.LightningModule):
         x = x.squeeze(0)
         y = y.squeeze(0)
         y_pred = self.forward(x)
-        loss = self.loss(y_pred, y, self.miner(y_pred, y))
+        loss = self.loss(y_pred, y)
+        # loss = self.loss(y_pred, y, self.miner(y_pred, y))
         self.log('train_loss', loss, sync_dist=True, prog_bar=True)
         return loss
 
